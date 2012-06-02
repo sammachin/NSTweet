@@ -8,9 +8,9 @@ import pymongo
 #twitter Auth params
 consumer_key="n8fLVWCvVf1TmVM1s44EQ"
 consumer_secret="R5ali9P9nNMfJhfny0xvYubfEx6mifp8rX4z5Kk5o"
-callback_url = "http://localhost:9031/completeauth"
+callback_url = "http://ec2.sammachin.com/nstweet/completeauth"
 
-def maketokens(qty):
+def makekeys(qty):
 	chain = []
 	for x in range(0, qty):
 		chain.append(str(uuid.uuid4()))
@@ -18,7 +18,8 @@ def maketokens(qty):
 	
 class start(object):
 	def index(self, var=None, **params):
-		return "NSTweet"	
+		cherrypy.response.headers['content-type'] = "text/html"
+		return "<h1>NSTweet</h1> <a href='/nstweet/startauth'>Start The Dance</a>"	
 	def startauth(self, var=None, **params):
 		auth = tweepy.OAuthHandler(consumer_key, consumer_secret, callback_url)
 		redirect_url = auth.get_authorization_url()
@@ -34,11 +35,11 @@ class start(object):
 		auth.get_access_token(oauth_verifier)
 		access_token =  auth.access_token.key
 		access_secret =  auth.access_token.secret
-		tokens = maketokens(100)
+		keys = makekeys(100)
 		obj = []
-		for token in tokens:
+		for key in keys:
 			item = {}
-			item["token"] = token
+			item["key"] = key
 			item["access_token"] = access_token
 			item["access_secret"] = access_secret
 			obj.append(item)
@@ -46,16 +47,20 @@ class start(object):
 		db = conn.nstweet
 		tokens = db.tokens
 		tokens.insert(obj)
-		return tokens
+		cherrypy.response.headers['content-type'] = "text/html"
+		resp = ""
+		for key in keys:
+			resp += key +"<br>"
+		return resp
 	def tweet(self, var=None, **params):
-		token = urllib.unquote(cherrypy.request.params['token'])
-		tweet = urllib.unquote(cherrypy.request.params['tweet'])
+		key = urllib.unquote(cherrypy.request.params['key'])
+		tweet = urllib.unquote(cherrypy.request.params['tweet']).replace("_", " ")
 		conn = pymongo.Connection()
 		db = conn.nstweet
 		tokens = db.tokens
-		result = tokens.find_one({ 'token' : token })
+		result = tokens.find_one({ 'key' : key })
 		access_token =  result['access_token']
-		access_secret =  result.['access_secret']
+		access_secret =  result['access_secret']
 		auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 		auth.set_access_token(access_token, access_secret)
 		api = tweepy.API(auth)
@@ -70,7 +75,7 @@ class start(object):
 cherrypy.config.update('app.cfg')
 app = cherrypy.tree.mount(start(), '/', 'app.cfg')
 cherrypy.config.update({'server.socket_host': '0.0.0.0',
-                        'server.socket_port': 9031})
+                        'server.socket_port': 9033})
 
 if hasattr(cherrypy.engine, "signal_handler"):
     cherrypy.engine.signal_handler.subscribe()

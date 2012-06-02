@@ -1,4 +1,6 @@
 import socket
+import urllib
+import urllib2
 
 
 def proc(domain):
@@ -9,8 +11,8 @@ def proc(domain):
 		sendtweet(key, message)
 
 def sendtweet(key, msg):
-	url = "http://ec2.sammachin.com/nstweet/tweet?token="
-	url += token
+	url = "http://ec2.sammachin.com/nstweet/tweet?key="
+	url += key
 	url += "&tweet="
 	url += urllib.quote(msg)
 	result = urllib.urlopen(url)
@@ -60,3 +62,4 @@ if __name__ == '__main__':
     print 'Finalizando'
     udps.close()
 ## end of http://code.activestate.com/recipes/491264/ }}}
+

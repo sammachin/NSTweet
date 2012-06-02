@@ -1,0 +1,127 @@
+<!DOCTYPE HTML> 
+<html>
+<head> 
+<title>CallGate</title> 
+<link  href="callgate/static/iPhone.css" type="text/css" rel="stylesheet" /> 
+<meta name="viewport" content="width=160; height=200; initial-scale=1.5; maximum-scale=1.5; user-scalable=0;"/> 
+<meta name="apple-mobile-web-app-capable" content="yes" /> 
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+<link rel="apple-touch-icon" href="callgate/static/phone.png"/>
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script> 
+<script type="text/javascript">
+
+var currentLayer = 'welcome';
+
+function showLayer(lyr){
+	hideLayer(currentLayer);
+	document.getElementById(lyr).style.visibility = 'visible';
+	currentLayer = lyr;
+}
+
+function hideLayer(lyr){
+	document.getElementById(lyr).style.visibility = 'hidden';
+}
+	
+	
+function doSetup(){
+    localStorage.setItem("id", document.forms.settings.id.value);
+	localStorage.setItem("pw", document.forms.settings.pw.value);
+	localStorage.setItem("orig", document.forms.settings.orig.value);
+	localStorage.setItem("cc", document.forms.settings.cc.value);
+	alert("Settings Stored");
+	showLayer('call');
+}
+
+function getPIN(){
+	$.ajax({
+        type: "GET",
+        url: "/twilio/register?id="+ document.forms.settings.id.value,
+        success: function(number){
+			alert("PIN Sent to" + document.forms.settings.id.value);
+		}
+	});
+}
+
+function twilioAuth(){
+	$.ajax({
+        type: "GET",
+        url: "/twilio/startauth?id="+ document.forms.settings.id.value,
+        success: function(twiliourl){
+			$(window.location).attr('href', twiliourl);
+		 	        }
+	});
+}
+
+function doShowAll(){
+       var key = "";
+       var pairs = "<tr><th>Name</th><th>Value</th></tr>\n";
+       var i=0;
+       for (i=0; i<=localStorage.length-1; i++) {
+         key = localStorage.key(i);
+         pairs += "<tr><td>"+key+"</td>\n<td>"+localStorage.getItem(key)+"</td></tr>\n";
+       }
+       if (pairs == "<tr><th>Name</th><th>Value</th></tr>\n") {
+         pairs += "<tr><td><i>empty</i></td>\n<td><i>empty</i></td></tr>\n";
+       }
+       document.getElementById('pairs').innerHTML = pairs;
+	}    
+
+
+
+function doCall(){
+	$.ajax({
+	        type: "GET",
+	        url: "/callgate/call?id="+ localStorage.getItem("id") +"&pw="+ localStorage.getItem("pw") +"&to="+ document.forms.call.tel.value +"&orig="+ localStorage.getItem("orig") +"&country=" + localStorage.getItem("cc"),
+	        success: function(number){
+				$(window.location).attr('href', 'tel:' + number);
+			 	        }
+	});
+}
+
+</script>
+</head>
+<body>
+<div id="welcome" class="page" style="visibility:visible; ">
+	<h1>CallGate</h1>
+</div>
+
+<div id="settings" class="page">
+	<hr>
+	<i>Settings</i>
+<form name="settings">
+	<input type="tel" id="id" size="25" placeholder="Your Main Mobile Number"><br>
+	<input type="tel" id="pw" size="12" placeholder="Your PIN"><input type=button value="Get PIN" ontouchstart="getPIN()" onclick="getPIN()"><br>
+	<input type="tel" id="orig" size="25" placeholder="Number of your Current SIM"><br>
+	<input type="text" id="cc" size="12" placeholder="Country"><br>
+	<input type=button value="Save" ontouchstart="doSetup()" onclick="doSetup()">  
+</form>
+
+</div>
+
+<div id="call" class="page">
+	<hr>
+	<i>Make a Call</i>
+	<form name="call">
+		<input type='tel' name='tel' size="25" /><br>
+		<input type='button' onclick="doCall()" ontouchstart="doCall()" value="Call">
+	</form>
+</div>
+
+
+<div id="debug" class="page">
+	<hr>
+	<i>Debug</i>
+	<input type=button value="refresh" onclick="doShowAll()">
+	<table id=pairs></table>
+	<hr>
+</div>
+<div id="menu" class="menu">
+	<hr>
+	<input type='button' ontouchstart="showLayer('call')" onclick="showLayer('call')"value="Call">
+	<input type='button' ontouchstart="showLayer('settings')" onclick="showLayer('settings')" value="Settings">
+	<input type='button' ontouchstart="showLayer('debug')" onclick="showLayer('debug')" value="Debug">
+	<hr>
+</div>
+
+</body> 
+</html> 
