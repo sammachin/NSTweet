@@ -2,7 +2,7 @@
 import DNS
 import optparse
 
-MyKey = "LkoE8fh7Lw2hRcw0uNR6iX4QZoBjtaAV"
+MyKey = "xxx"
 
 DNS.ParseResolvConf()
 d = DNS.Request()
