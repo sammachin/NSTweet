@@ -6,9 +6,9 @@ import pymongo
 
 
 #twitter Auth params
-consumer_key="n8fLVWCvVf1TmVM1s44EQ"
-consumer_secret="R5ali9P9nNMfJhfny0xvYubfEx6mifp8rX4z5Kk5o"
-callback_url = "http://ec2.sammachin.com/nstweet/completeauth"
+consumer_key="xxxx"
+consumer_secret="xxxxxxx"
+callback_url = "http://xxx/nstweet/completeauth"
 
 def makekeys(qty):
 	chain = []
